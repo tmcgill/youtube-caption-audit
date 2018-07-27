@@ -1,5 +1,5 @@
 # YouTube Caption Audit
-This application checks all public videos in a given YouTube channel and reports back which videos do not have human-created closed captions. All required code is contained in a single file for ease of sharing and distribution.
+This application checks all public videos in a given YouTube channel and reports back which videos do not have human-created closed captions. All required code is contained in a single file for ease of sharing and distribution. Run this in whatever environment(s) permitted by your API key.
 ## Usage
 Enter your API key and YouTube channel ID and click 'Check videos'.
 ### Presets
