@@ -21,3 +21,9 @@ You can optionally define API key and Channel ID presets in an sidecar file name
 }
 ```
 There is no limit to the number of channel presets you can define, but they will all use the same API key. If "filtering" is included in config.json and its value is set to "off", all videos for a selected channel will be included in the results table (not just the uncaptioned ones). This may be useful for debugging or deomonstration, but "filtering" should be omitted or set to "on" for normal usage.
+## Copyright and License
+Developed by UCI Strategic Communications & Public Affairs
+
+Copyright 2018 UC Regents
+
+Licensed under MIT (https://opensource.org/licenses/MIT)
