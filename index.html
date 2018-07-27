@@ -1,0 +1,465 @@
+<!--
+ - YouTube Caption Audit
+ - Copyright 2018 UC Regents
+ - Licensed under MIT (https://opensource.org/licenses/MIT)
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="" name="description"/>
+
+<title>YouTube Caption Audit</title>
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous"/>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+
+<style>
+	body {
+		margin: 0;
+		padding: 0;
+	}
+	*:focus {
+		outline: 4px solid #5e9ed6 !important;
+		outline-offset: -2px !important;
+	}
+	a {
+		color: #0064a4;
+		text-decoration: underline;
+	}
+	a:hover,
+	a:focus {
+		text-decoration: none;
+	}
+	header h1 {
+		border-top: 3px solid #ffd200;
+		color: #1b3d6d;
+		display: inline-block;
+		font-size: 1.5rem;
+		font-weight: normal;
+		padding: 1rem 0;
+	}
+	footer {
+		font-size: .85rem;
+		padding: 1rem 0;
+	}
+	
+	.widget {
+		margin: 1rem 0;
+	}
+	
+	form {
+		background-color: #f8f8f8;
+		border: 1px solid #ccc;
+		border-radius: .5rem;
+		padding: 1rem;
+	}
+	form fieldset {
+		margin-top: 1.15rem;
+	}
+	form fieldset:first-of-type {
+		margin-top: 0;
+	}
+	form a,
+	form span {
+		font-size: .8rem;
+		float: right;
+		margin-top: .2rem;
+	}
+	form label {
+		font-weight: bold;
+	}
+	form .btn {
+		border: 1px solid #0064a4;
+		border-radius: 1rem;
+		color: #0064a4;
+		width: 100%;
+	}
+	form .btn:hover,
+	form .btn:focus {
+		background-color: #0064a4;
+		color: #fff;
+	}
+		
+	#results {
+		display: none;
+	}
+	caption {
+		caption-side: top;
+		text-align: center;
+	}
+	th, td {
+		vertical-align: top;
+	}
+	th {
+		color: #0064a4;
+	}
+	tbody th {
+		font-weight: normal;
+	}
+	th .fa {
+		color: #666;
+		text-align: right;
+		width: 1rem;
+	}
+	th .fa-sort {
+		color: #ccc;
+	}
+	#title {
+		min-width: 6rem;
+	}
+	#pub {
+		min-width: 9rem;
+	}
+	#views {
+		min-width: 6rem;
+	}
+	
+	
+	.progress {
+		margin: 0 auto;
+		width: 50%;
+	}
+	
+	.btn-group .btn {
+		border: 1px solid #ddd;
+		padding: .08rem .4rem;
+	}
+	
+	[role=button] {
+		cursor: pointer;
+	}
+</style>
+</head>
+<body>
+	<header class="container-fluid">
+		<div class="row">
+			<div class="col text-center">
+				<h1 class="text-center">YouTube Caption Audit</h1>
+			</div>
+		</div>
+	</header>
+	<main class="container">
+		<div class="row align-items-center">
+			
+			<form class="col-lg my-3">
+				<fieldset>
+					<label for="api-key">API Key</label>
+					<a href="https://www.youtube.com/watch?v=Im69kzhpR3I" target="_blank">Get an API key</a>
+					<input id="api-key" type="text" class="form-control">
+				</fieldset>
+				<fieldset>
+					<label for="preset">Channel Preset</label>
+					<select id="preset" class="form-control"></select>
+				</fieldset>
+				<fieldset>
+					<label for="channel-id">Channel ID</label>
+					<a href="https://www.youtube.com/account_advanced" target="_blank">Find your channel ID</a>
+					<input id="channel-id" type="text" class="form-control">
+				</fieldset>
+				<fieldset>
+					<button id="submit" class="btn btn">Check videos</button>
+				</fieldset>
+			</form>
+			
+			<div class="col-lg my-3">
+				<div id="status" aria-live="polite">
+					<p class="h4 text-center">Ready.</p>
+				</div>
+			</div>
+		</div>
+		
+		<div id="results" class="my-3">
+			<div class="row">
+				<div class="col">
+					<table class="table">
+						<caption>
+							<span>Sort results by clicking the column headings.</span>
+							<span id="sort-status" class="sr-only" aria-live="polite"></span>
+						</caption>
+						<thead>
+							<tr>
+								<th id="title" scope="col" aria-sort="none"><span role="button" tabindex="0">Title</span>&#160;<span class="fa fa-sort" aria-hidden="true"></span></th>
+								<th id="pub" scope="col" aria-sort="none"><span role="button" tabindex="0">Publish Date</span>&#160;<span class="fa fa-sort" aria-hidden="true"></span></th>
+								<th id="views" scope="col" aria-sort="none"><span role="button" tabindex="0">Views</span>&#160;<span class="fa fa-sort" aria-hidden="true"></span></th>
+							</tr>
+						</thead>
+						<tbody></tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		
+	</main>
+	<footer class="container-fluid">
+		<div class="row">
+			<div class="col text-center">
+				<span>Developed by <a href="https://communications.uci.edu/">UCI Strategic Communications &#38; Public Affairs</a></span>
+				<span>|</span>
+				<span>© <span>2018</span> UC Regents</span>
+			</div>
+		</div>
+	</footer>
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+	<script>
+		(function($) {
+			"use strict";
+			
+			var key,
+				filtering,
+				channel,
+				channelPresets,
+				uploadsId,
+				playlistItems,
+				playlistItemIndex,
+				videos,
+				resultCount,
+				resultArray = [],
+				progressValue,
+				today = new Date();
+				
+			// Show current year for copyright
+			$('#copyright span').html(today.getFullYear());
+			
+			// Retrive config values if present
+			$.getJSON('config.json', function(result){
+				key = result.apiKey || '';
+				filtering = result.filtering || 'on';
+				$('#api-key').val(key);
+				channelPresets = result.channels;
+				$.each(result.channels, function(key, value) {
+					if (key == 0) {
+						$('#preset').append('<option value="' + key + '" selected="selected">' + value.name + '</option>');
+						$('#channel-id').val(value.id);
+					} else {
+						$('#preset').append('<option value="' + key + '">' + value.name + '</option>');
+					}
+				});
+			}).fail(function() {
+				console.info('No config file found.');
+			});
+			
+			$('#preset').change(function() {
+				$.each(channelPresets, function(key, value) {
+					if (key == $('#preset').val()) {
+						$('#channel-id').val(value.id);
+					}
+				});
+			});
+			
+			$('#channel-id').change(function() {
+				$('#preset').val('');
+			});
+			
+			
+			$('#submit').click(function(event) {
+				event.preventDefault();
+				key = '';
+				channel = '';
+				uploadsId = '';
+				playlistItems = [];
+				playlistItemIndex = -1;
+				videos = [];
+				resultCount = 0;
+				resultArray = [];
+				key = $('#api-key').val();
+				channel = $('#channel-id').val();
+				$('#results').fadeOut(0);
+				$('#results tbody').html('');
+				$('#status').html('<p class="h4 text-center">Retrieving videos.</p><div class="progress"><div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-warning" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
+				getPlaylistId();
+			});
+			
+			$('#title span').bind('click keyup keydown', function(event) {
+				if (event.type == 'keyup' && event.which != 32) {
+					return;
+				}
+				if (event.type == 'keydown' && event.which != 13) {
+					return;
+				}
+				if ($('#title').attr('aria-sort') == 'ascending') {
+					sortResults('title-dsc');
+				} else {
+					sortResults('title-asc');					
+				}
+			});
+			$('#pub span').bind('click keyup keydown', function(event) {
+				if (event.type == 'keyup' && event.which != 32) {
+					return;
+				}
+				if (event.type == 'keydown' && event.which != 13) {
+					return;
+				}
+				if ($('#pub').attr('aria-sort') == 'ascending') {
+					sortResults('pub-dsc');
+				} else {
+					sortResults('pub-asc');					
+				}
+			});
+			$('#views span').bind('click keyup keydown', function(event) {
+				if (event.type == 'keyup' && event.which != 32) {
+					return;
+				}
+				if (event.type == 'keydown' && event.which != 13) {
+					return;
+				}
+				if ($('#views').attr('aria-sort') == 'ascending') {
+					sortResults('views-dsc');
+				} else {
+					sortResults('views-asc');					
+				}
+			});
+			
+			function getPlaylistId() {
+				console.log('getPlaylistId');
+				var endpoint = 'https://www.googleapis.com/youtube/v3/channels?';
+					endpoint += 'part=contentDetails';
+					endpoint += '&fields=items%2FcontentDetails%2FrelatedPlaylists%2Fuploads';
+					endpoint += '&maxResults=1';
+					endpoint += '&id=' + channel;
+					endpoint += '&key=' + key;
+				$.getJSON(endpoint, function(result) {
+					uploadsId = result.items[0].contentDetails.relatedPlaylists.uploads;
+					getPlaylistItems('');
+				}).fail(function() {
+					$('#status').html('<div class="alert alert-danger"><p class="h4">Something went wrong.</p><p>Unable to get the Uploads playlist ID.</p><p>Verify the API Key and Channel ID values are correct and try again. Also make sure you\'re running this from an authorized domain.</p><p>> <a href="https://support.google.com/googleapi/answer/6310037?hl=en" target="_blank">Best practices for securely using API keys</a></p></div>');
+				});
+			}
+			
+			function getPlaylistItems(pageToken) {
+				console.log('getPlaylistItems');
+				var endpoint = 'https://www.googleapis.com/youtube/v3/playlistItems?';
+					endpoint += 'part=snippet';
+					endpoint += '&fields=items(snippet(resourceId(kind%2CvideoId)))%2CnextPageToken%2CpageInfo%2FtotalResults';
+					endpoint += '&maxResults=50';
+					endpoint += '&playlistId=' + uploadsId;
+					endpoint += '&key=' + key;
+					endpoint += '&pageToken=' + pageToken;
+				$.getJSON(endpoint, function(result) {
+					$.each(result.items, function(index, value) {
+						if (value.snippet.resourceId.kind == 'youtube#video') {
+							videos.push(value);
+						}
+					});
+					if (result.nextPageToken !== undefined) {
+						getPlaylistItems(result.nextPageToken);
+					} else {
+						getVideoDetails(0, videos.length);
+					}
+				}).fail(function() {
+					$('#status').html('<div class="alert alert-danger"><p class="h4">Something went wrong.</p><p>Unable to get Uploads playlist items.</p><p>Verify the API Key and Channel ID values are correct and try again. Also make sure you\'re running this from an authorized domain.</p><p>> <a href="https://support.google.com/googleapi/answer/6310037?hl=en" target="_blank">Best practices for securely using API keys</a></p></div>');
+				});
+			}
+			
+			function getVideoDetails(index, total) {
+				var endpoint = 'https://www.googleapis.com/youtube/v3/videos?';
+					endpoint += 'part=contentDetails%2C+snippet%2C+statistics';
+					endpoint += '&fields=items(contentDetails%2Fcaption%2Cid%2Csnippet(publishedAt%2Ctitle)%2Cstatistics%2FviewCount)';
+					endpoint += '&maxResults=1';
+					endpoint += '&key=' + key;
+					endpoint += '&id=';
+					
+				// Don't use $.each here because of synchronization issues
+				$.getJSON(endpoint + videos[index].snippet.resourceId.videoId, function(result) {
+					if (result.items[0].contentDetails.caption == 'false' || filtering == 'off') {
+						resultCount++;
+						var pubDate = new Date(result.items[0].snippet.publishedAt),
+							pubUtc = Date.UTC(pubDate.getFullYear(), pubDate.getMonth(), pubDate.getDate(), pubDate.getHours(), pubDate.getMinutes(), pubDate.getSeconds(), pubDate.getMilliseconds());
+						resultArray.push({"index":resultCount,"id":videos[index].snippet.resourceId.videoId, "title":result.items[0].snippet.title, "pubDate":pubDate, "pubUtc":pubUtc, "views":result.items[0].statistics.viewCount});
+					}
+					if ((index + 1) == total) {
+						$('#status').html('<p class="h4 text-center">' + resultCount + ' of ' + total + ' video(s) require captions.</p>');
+						displayResults();
+						$('#results').fadeIn(500);
+					} else {
+						getVideoDetails(++index, total);
+						progressValue = Math.floor((index / total) * 100);
+						$('#progress-bar').width(progressValue + '%').attr('aria-valuenow', progressValue);
+					}
+				}).fail(function() {
+					$('#status').html('<div class="alert alert-danger"><p class="h4">Something went wrong.</p><p>Unable to get details for video ID <strong>' + value.snippet.resourceId.videoId + '</strong>.</p><p>Verify the API Key and Channel ID values are correct and try again. Also make sure you\'re running this from an authorized domain.</p><p>> <a href="https://support.google.com/googleapi/answer/6310037?hl=en" target="_blank">Best practices for securely using API keys</a></p></div>');
+				});
+			}
+			
+			function sortResults(criterion) {
+				$('#results th .fa').removeClass('fa-sort-up fa-sort-down');
+				$('#results th .fa').addClass('fa-sort');
+				$('#results th').attr('aria-sort','none');
+				switch (criterion) {
+					case 'title-asc':
+						$('#sort-status').html('Results sorted by title, ascending');
+						resultArray.sort(function(a, b) {
+							if (a.title.toLowerCase() < b.title.toLowerCase()) {
+								return -1;
+							}
+							if (a.title.toLowerCase() > b.title.toLowerCase()) {
+								return 1;
+							}
+							return 0;
+						})						
+						$('#title').attr('aria-sort','ascending');
+						$('#title .fa').addClass('fa-sort-up').removeClass('fa-sort');
+						break;
+					case 'title-dsc':
+						$('#sort-status').html('Results sorted by title, descending');
+						resultArray.sort(function(a, b) {
+							if (a.title.toLowerCase() < b.title.toLowerCase()) {
+								return 1;
+							}
+							if (a.title.toLowerCase() > b.title.toLowerCase()) {
+								return -1;
+							}
+							return 0;
+						})						
+						$('#title').attr('aria-sort','descending');
+						$('#title .fa').addClass('fa-sort-down').removeClass('fa-sort');
+						break;
+					case 'pub-asc':
+						$('#sort-status').html('Results sorted by publish date, ascending');
+						resultArray.sort(function(a, b) {return a.pubUtc - b.pubUtc});
+						$('#pub').attr('aria-sort','ascending');
+						$('#pub .fa').addClass('fa-sort-up').removeClass('fa-sort');
+						break;
+					case 'pub-dsc':
+						$('#sort-status').html('Results sorted by publish date, descending');
+						resultArray.sort(function(a, b) {return b.pubUtc - a.pubUtc});
+						$('#pub').attr('aria-sort','descending');
+						$('#pub .fa').addClass('fa-sort-down').removeClass('fa-sort');
+						break;
+					case 'views-asc':
+						$('#sort-status').html('Results sorted by views, ascending');
+						resultArray.sort(function(a, b) {return a.views - b.views});
+						$('#views').attr('aria-sort','ascending');
+						$('#views .fa').addClass('fa-sort-up').removeClass('fa-sort');
+						break;
+					case 'views-dsc':
+						$('#sort-status').html('Results sorted by views, descending');
+						resultArray.sort(function(a, b) {return b.views - a.views});
+						$('#views').attr('aria-sort','descending');
+						$('#views .fa').addClass('fa-sort-down').removeClass('fa-sort');
+						break;
+					default:
+						return;
+				}
+				displayResults();
+			}
+			
+			function displayResults() {
+				var resultMarkup = '';
+				$.each(resultArray, function(key, value) {
+					resultMarkup += '<tr>';
+					resultMarkup += '<th scope="row"><a href="https://www.youtube.com/watch?v=' + value.id + '" target="_blank">' + value.title + '</a></th>';
+					resultMarkup += '<td>' + value.pubDate.toDateString() + '</td>';
+					resultMarkup += '<td>' + value.views + '</td>';
+					resultMarkup += '</tr>';
+				});
+				$('#results tbody').html(resultMarkup);
+			}
+			
+		}(jQuery));
+	</script>
+</body>
+</html>
